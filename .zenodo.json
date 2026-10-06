@@ -1,0 +1,36 @@
+{
+  "title": "FlashCart: Fast Cartesian Tensor Products for Equivariant Interatomic Potentials",
+  "upload_type": "software",
+  "description": "<p>FlashCart provides Cartesian tensor operations and an equivariant interatomic potential built on them. It derives tensor products and their derivatives symbolically and generates fused Triton kernels for model evaluation and training. Cartesian tensor expansions and equivariant linear maps also use generated kernels. PyTorch implementations support these operations on CPUs and Apple Silicon.</p>\n<p>The package includes tools for training and evaluating FlashCart potentials, multi-GPU training with Lightning Fabric, and interfaces for atomistic simulations with ASE and LAMMPS. The documentation covers installation and usage, with tutorials, example scripts, and a Python API reference.</p>\n<p>This archive contains the source code for FlashCart.</p>\n<p><strong>Code:</strong> <a href=\"https://github.com/inm-leibniz/flashcart\">https://github.com/inm-leibniz/flashcart</a><br><strong>Documentation:</strong> <a href=\"https://inm-leibniz.github.io/flashcart/\">https://inm-leibniz.github.io/flashcart/</a><br><strong>Paper:</strong> <a href=\"https://arxiv.org/abs/2610.06409\">https://arxiv.org/abs/2610.06409</a><br><strong>Trained models:</strong> <a href=\"https://doi.org/10.5281/zenodo.23159584\">https://doi.org/10.5281/zenodo.23159584</a></p>",
+  "creators": [
+    {
+      "name": "Zaverkin, Viktor"
+    }
+  ],
+  "access_right": "open",
+  "license": "apache2.0",
+  "notes": "<p>If you use FlashCart, please cite:</p>\n<p>Viktor Zaverkin, Payman Goodarzi, Sergey V. Sukhomlinov, Davit Hovhannisyan, Roland Aydin, Martin H. Müser, and Mathias Niepert. <em>FlashCart: Fast Cartesian Tensor Products for Equivariant Interatomic Potentials</em> (2026). <a href=\"https://arxiv.org/abs/2610.06409\">https://arxiv.org/abs/2610.06409</a></p>",
+  "related_identifiers": [
+    {
+      "identifier": "https://arxiv.org/abs/2610.06409",
+      "scheme": "url",
+      "relation": "isDescribedBy",
+      "resource_type": "publication-preprint"
+    },
+    {
+      "identifier": "https://inm-leibniz.github.io/flashcart/",
+      "scheme": "url",
+      "relation": "isDocumentedBy"
+    },
+    {
+      "identifier": "10.5281/zenodo.23159584",
+      "scheme": "doi",
+      "relation": "isSupplementedBy"
+    }
+  ],
+  "communities": [
+    {
+      "identifier": "inm"
+    }
+  ]
+}
