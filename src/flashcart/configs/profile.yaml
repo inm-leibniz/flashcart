@@ -1,0 +1,20 @@
+# Profiling uses newly initialized model weights
+# Model, data, and loss defaults are inherited from default.yaml
+profile_phase: both               # inference, training, or both
+profile_data_path: ~              # inference data. ~ uses train_path
+profile_train_path: ~             # training data. ~ uses train_path, then profile_data_path
+profile_batch_size: 64            # structures per batch, or target with dynamic batching
+profile_train_batch_size: ~       # ~ uses profile_batch_size
+profile_n_batches: 1              # batches loaded onto the device before timing
+profile_warmup: 1                 # untimed runs before each measurement
+profile_repeat: 1                 # measured repetitions over the selected batches
+profile_row_limit: 40             # maximum rows printed in operation tables
+profile_dynamic_batching: false   # derive atom and edge budgets from the target batch size
+profile_pre_fit: true             # initialize energy shifts, scales, and neighbor normalization
+profile_memory: false             # collect memory information in the profiler
+profile_record_shapes: false      # record operation input shapes
+profile_with_stack: false         # record source locations for operations
+profile_trace_dir: ~              # output directory for traces. ~ disables trace export
+profile_compile_predict: false    # compile prediction during profiling
+profile_compile_mode: reduce-overhead
+profile_compile_fullgraph: true   # require compilation without graph breaks

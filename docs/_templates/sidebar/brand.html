@@ -1,0 +1,13 @@
+{% extends "!sidebar/brand.html" %}
+
+{% block brand_content %}
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo only-light"
+         src="{{ pathto('_static/flashcart-logo.png', 1) }}"
+         alt="{{ project }}" width="200">
+    <img class="sidebar-logo only-dark"
+         src="{{ pathto('_static/flashcart-logo-dark.png', 1) }}"
+         alt="{{ project }}" width="200">
+  </div>
+  <span class="flashcart-version">{{ release }}</span>
+{% endblock brand_content %}

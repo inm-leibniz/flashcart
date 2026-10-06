@@ -1,0 +1,49 @@
+# Energy conservation: minimize, 50 ps NVT (300 K by default), then 1.2 ns NVE (0.5 fs steps).
+#
+#   lmp -k on g 1 -sf kk -pk kokkos newton on neigh half -in in.nve \
+#       -var model /abs/path/flashcart-mliap.pt -var out results/<name>
+
+variable model   index flashcart-mliap.pt
+variable out     index results
+variable temp    index 300.0        # NVT pre-equilibration
+variable eqsteps index 100000       # 50 ps NVT before the NVE stage
+variable steps   index 2400000      # 1.2 ns NVE at 0.5 fs
+variable dt      index 0.0005       # ps
+variable seed    index 4928459
+variable tdamp   index 0.2          # ps
+variable thermoevery index 200      # 0.1 ps
+variable dumpevery   index 4000     # 2 ps
+
+shell           mkdir -p ${out}
+
+units           metal
+atom_style      atomic
+boundary        p p p
+newton          on
+
+read_data       water_256.data
+pair_style      mliap unified ${model} 0
+pair_coeff      * * H O
+
+neighbor        1.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+timestep        ${dt}
+thermo          ${thermoevery}
+thermo_style    custom step time temp pe ke etotal press
+thermo_modify   format float %18.8f flush yes
+
+minimize        1.0e-4 1.0e-6 300 3000
+reset_timestep  0
+
+velocity        all create ${temp} ${seed} mom yes rot yes dist gaussian
+fix             eq all nvt temp ${temp} ${temp} ${tdamp}
+run             ${eqsteps}
+unfix           eq
+write_data      ${out}/nve_start.data nocoeff
+
+reset_timestep  0
+fix             nve all nve
+dump            traj all custom ${dumpevery} ${out}/nve.lammpstrj id type element x y z ix iy iz
+dump_modify     traj sort id element H O
+run             ${steps}

@@ -1,0 +1,75 @@
+``flashcart.o3``
+================
+
+Expand directions into irreducible Cartesian tensors, couple tensor features,
+and mix their channels with equivariant linear maps. A tensor of rank ``l`` is
+stored as ``2 * l + 1`` independent components. Blocks of components are
+concatenated in increasing tensor rank, with feature channels contiguous within
+each component. Tensor-product outputs can also retain a separate coupling-path
+axis. The layout helpers below describe and convert these representations.
+
+:class:`~flashcart.o3.irreps.Irreps` expands edge directions,
+:class:`~flashcart.o3.tensor_product.TensorProduct` combines tensor features, and
+:class:`~flashcart.o3.linear.LinearLayer` mixes paths and channels without mixing
+tensor ranks. Products retain natural-parity couplings: ``l1 + l2 + l_out`` must
+be even in addition to satisfying the triangle rule.
+
+The operations provide PyTorch implementations and optional generated Triton
+kernels. Select Triton with ``use_triton=True`` for CUDA inputs, and configure
+the generated maximum tensor rank before importing the tensor modules. See
+:doc:`../guide/env_vars` for the rank setting,
+:ref:`kernel-generation-compilation` for compilation, and
+:ref:`profiling-command` for profiling.
+
+.. _component-ordering:
+
+Symmetry and tracelessness determine the full tensor from its independent
+components. The stored components use the following order:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 15 85
+
+   * - Tensor rank
+     - Component order
+   * - 0
+     - Scalar
+   * - 1
+     - ``x, y, z``
+   * - 2
+     - ``xx, yy, xy, xz, yz``
+   * - 3
+     - ``xxx, xxy, xxz, xyy, xyz, yyz, yyy``
+
+For ranks above three, a component is represented by the counts ``(a, b, c)`` of
+its Cartesian indices, with ``a + b + c == l``. Components with ``c == 0`` come
+first, ordered by decreasing ``a``. Those with ``c == 1`` follow in the same
+order. Symmetry and tracelessness supply the remaining components.
+
+``flashcart.o3.irreps``
+-----------------------
+
+.. automodule:: flashcart.o3.irreps
+
+``flashcart.o3.tensor_product``
+-------------------------------
+
+.. automodule:: flashcart.o3.tensor_product
+
+``flashcart.o3.linear``
+-----------------------
+
+.. automodule:: flashcart.o3.linear
+
+.. _tensor-layouts-and-conversions:
+.. _kernel-precision:
+
+``flashcart.o3.utils``
+----------------------
+
+.. automodule:: flashcart.o3.utils
+
+``flashcart.o3.kernel_config``
+------------------------------
+
+.. automodule:: flashcart.o3.kernel_config

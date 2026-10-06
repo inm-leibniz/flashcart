@@ -1,0 +1,56 @@
+# SPICE (MACE-OFF23): 1.1M-parameter model (i3c3f64l2) on the split with seed 0.
+# Only keys that differ from flashcart/configs/default.yaml are listed.
+# make_configs.py generates the five SPICE models with three seeds each.
+
+# data (see examples/datasets/prepare_spice.py)
+train_path: data/spice/train_0.extxyz
+valid_path: data/spice/val_0.extxyz
+test_path: data/spice/test.extxyz
+elements: [H, C, N, O, F, P, S, Cl, Br, I]
+train_batch_size: 128
+eval_batch_size: 128
+data_seed: 0
+n_workers: 2
+
+# output
+output_path: models/i3c3f64l2_s0
+
+# model
+model_seed: 0
+r_max: 6.0
+n_hidden_feats: 64
+l_max_hidden_feats: 2
+n_interactions: 3
+correlation: 3
+path_reduced_product: false
+gate_activation: silu
+# isolated-atom energies (eV) of the SPICE reference, in `elements` order
+atomic_shifts: [-13.571964772646918, -1030.5671648271828, -1486.3750255780376,
+                -2043.933693071156, -2715.318528602957, -9287.407133426237,
+                -10834.4844708122, -12522.649269035726, -70045.28385080204,
+                -8102.524593409054]
+
+# optimizer and schedule: 400 epochs (default), 20 linear warmup, then 380 cosine decay
+weight_decay: 3.0e-4
+end_factor: 1.0e-2
+warmup_epochs: 20
+decay_epochs: 380
+decay_shape: cosine
+
+# training
+save_every: 5
+ema_decay: 0.999
+devices: 1
+predict_compile: true
+
+# energy MAE per atom + mean force-vector norm, equally weighted
+train_loss:
+  weighted_sum:
+    - property: energy
+      reduce: mae
+      normalization: per_atom
+      weight: 1.0
+    - property: forces
+      reduce: norm_mean
+      normalization: none
+      weight: 1.0

@@ -1,0 +1,12 @@
+.sidebar-brand .sidebar-logo {
+  max-width: 100%;
+  height: auto;
+}
+
+.flashcart-version {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--color-foreground-muted);
+  font-size: 0.875rem;
+  text-align: center;
+}

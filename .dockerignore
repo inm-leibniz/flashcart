@@ -1,0 +1,11 @@
+.git
+.github
+docs/_build
+**/__pycache__
+*.egg-info
+build
+dist
+models
+*.pt
+*.extxyz
+*.xyz

@@ -1,0 +1,131 @@
+# FlashCart default configuration.
+
+# data
+train_path: ~               # extxyz training set (required)
+valid_path: ~               # extxyz validation set (required for training)
+test_path: ~                # optional extxyz test set, evaluated by flashcart-test
+elements: ~                 # element order, e.g. [H, C, N, O]. ~ infers it from train_path
+energy_key: REF_energy      # atoms.info key of the reference energy
+forces_key: REF_forces      # atoms.arrays key of the reference forces
+# Each global target is divided by the number of ranks and rounded up.
+# Actual structure counts vary when dynamic batching is enabled.
+train_batch_size: 192       # global target. Dynamic batching derives atom and edge budgets
+eval_batch_size: 192        # global target for evaluation batches
+dynamic_batching: true      # choose batch sizes using atom and edge budgets
+drop_last: false            # fixed batches: drop incomplete batches. Balanced dynamic batches: truncate to the smallest rank batch count
+data_seed: 1234             # seed for shuffling and rank striding
+n_workers: 0                # DataLoader worker processes
+
+# output
+output_path: ~              # required run directory for checkpoints, logs, and metrics.csv
+# Training resumes from output_path/log/training_state.pt when that file exists.
+# Otherwise, checkpoint initializes weights. Testing defaults to output_path/best.
+checkpoint: ~
+
+# model
+model_seed: 1234            # seed for parameter initialization
+r_max: 5.5                  # neighbor cutoff radius
+r_min: 0.0                  # lower bound of the radial mapping interval
+n_hidden_feats: 128         # channels per tensor rank in the hidden node features
+l_max_hidden_feats: 2       # maximum tensor rank propagated between layers
+l_max_edge_attrs: 3         # maximum tensor rank of the Cartesian edge attributes
+n_radial: 8                 # number of Chebyshev radial basis functions
+n_interactions: 2           # number of message-passing layers
+correlation: 3              # polynomial degree of repeated products. 1 disables product layers
+path_reduced_product: false # path-reduced product coupling with learnable per-path weights
+nonlinearity: true          # gated nonlinearity after each interaction
+gate_activation: sigmoid    # activation of the gates
+gate_bias: true             # bias in the gate-producing linear layer
+layer_norm: true            # RMS layer norm inside interaction and product layers
+element_agnostic_interaction: true   # false: interactions condition on atom types
+element_agnostic_product: true       # false: element-dependent product weights
+n_element_interaction_features: ~    # required width when element-conditioned interactions are enabled
+radial_mapping: cosine      # distance mapping of the Chebyshev basis: cosine or affine
+cutoff_poly_order: 6        # order of the polynomial cutoff envelope
+hidden_radial: [64, 64]     # hidden widths of the radial MLP
+hidden_readout: [64, 64]    # hidden widths of the energy readout MLP
+atomic_shifts: ~            # prior energy offsets in elements order. ~ uses zeros when fitting
+fit_atomic_shifts: true     # fit corrections to the provided prior offsets
+use_triton: true            # fused Triton kernels on CUDA (PyTorch fallback otherwise)
+
+# optimizer
+optimizer: muon             # muon (Muon for 2-D weights, AdamW for the rest) or adamw
+lr: 5.0e-3                  # peak learning rate
+weight_decay: 1.0e-5        # decoupled weight decay (must be > 0 with muon)
+grad_clip_norm: ~           # global gradient-norm clip. ~ disables it
+muon_alignment_damping: false   # Magma alignment damping in Muon
+muon_damping_tau: 2.0           # damping sigmoid temperature
+muon_damping_ema_decay: 0.9     # damping score EMA decay
+muon_damping_min_scale: 0.1     # damping floor
+muon_ns_steps: 5                # Newton-Schulz iterations
+muon_ns_polish_steps: 0         # exact-Newton polish iterations after those
+muon_ns_rms_scale: 0.2          # match-RMS rescale constant
+log_weight_norms: false     # log Muon weight norms to metrics.csv
+
+# scheduler (warmup-stable-decay, stepped once per epoch)
+start_factor: 0.1           # LR fraction at the start of warmup
+end_factor: 1.0e-3          # LR fraction at the end of decay
+warmup_epochs: 10           # warmup length
+decay_epochs: 20            # decay length, counted from the last epoch
+decay_shape: sqrt           # linear, cosine, or sqrt
+warmup_shape: linear        # linear, cosine, or sqrt
+
+# training
+max_epochs: 400             # total epochs
+validate_every: 1           # epochs between validations
+save_every: 10              # epochs between rolling checkpoints
+ema_decay: 0.99             # EMA of the parameters. ~ disables it
+device: gpu                 # Fabric accelerator: gpu, cpu, mps, or auto
+devices: auto               # devices per node (int, list, or auto)
+strategy: auto              # Fabric strategy, e.g. ddp
+n_nodes: 1                  # number of nodes
+precision: ~                # Fabric precision. ~ keeps float32
+predict_compile: false      # run predictions through torch.compile (enables batch padding)
+predict_compile_mode: reduce-overhead   # torch.compile mode
+predict_compile_fullgraph: true         # compile without graph breaks
+predict_compile_dynamic: false          # dynamic-shape compile
+predict_pad_atom_multiple: 128          # rounding multiple for total padded atom count
+predict_pad_edge_multiple: 128          # rounding multiple for total padded edge count
+predict_pad_graph_multiple: 8           # rounding multiple for total padded graph count
+
+# loss functions
+# Each term: property (energy, forces), reduce (sae, mae, sse, mse, rmse, maxe,
+# huber_sum, huber_mean, norm_sum, norm_mean), normalization (per_atom,
+# per_sqrt_atom, none), optional delta (Huber) and, inside weighted_sum, weight
+train_loss:                 # loss backpropagated per step
+  weighted_sum:
+    - property: energy
+      reduce: huber_sum
+      normalization: per_atom
+      weight: 1.0
+      delta: 0.005
+    - property: forces
+      reduce: huber_sum
+      normalization: none
+      weight: 0.01
+      delta: 0.05
+
+early_stopping_loss:        # validation metric selecting the best checkpoint
+  weighted_sum:
+    - property: energy
+      reduce: mae
+      normalization: per_atom
+      weight: 1.0
+    - property: forces
+      reduce: mae
+      normalization: none
+      weight: 1.0
+
+valid_losses:               # metrics logged for train/valid and reported by flashcart-test
+  - property: energy
+    reduce: rmse
+    normalization: per_atom
+  - property: energy
+    reduce: mae
+    normalization: per_atom
+  - property: forces
+    reduce: rmse
+    normalization: none
+  - property: forces
+    reduce: mae
+    normalization: none

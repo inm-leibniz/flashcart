@@ -1,0 +1,48 @@
+# Density: minimize, then 1.2 ns NPT at 1 bar (300 K by default, set -var temp) with 0.5 fs steps.
+#
+#   lmp -k on g 1 -sf kk -pk kokkos newton on neigh half -in in.npt \
+#       -var model /abs/path/flashcart-mliap.pt -var out results/<name> -var temp 320
+
+variable model  index flashcart-mliap.pt
+variable out    index results
+variable temp   index 300.0        # K
+variable press  index 1.0          # bar
+variable steps  index 2400000      # 1.2 ns at 0.5 fs
+variable dt     index 0.0005       # ps
+variable seed   index 4928459
+variable tdamp  index 0.2          # ps
+variable pdamp  index 1.0          # ps
+variable thermoevery index 200     # 0.1 ps
+variable dumpevery   index 4000    # 2 ps
+
+shell           mkdir -p ${out}
+
+units           metal
+atom_style      atomic
+boundary        p p p
+newton          on
+
+read_data       water_256.data
+pair_style      mliap unified ${model} 0
+pair_coeff      * * H O
+
+neighbor        1.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+timestep        ${dt}
+thermo          ${thermoevery}
+thermo_style    custom step time temp pe ke etotal press vol density
+thermo_modify   format float %18.8f flush yes
+
+minimize        1.0e-4 1.0e-6 300 3000
+reset_timestep  0
+
+velocity        all create ${temp} ${seed} mom yes rot yes dist gaussian
+fix             npt all npt temp ${temp} ${temp} ${tdamp} iso ${press} ${press} ${pdamp}
+
+dump            traj all custom ${dumpevery} ${out}/npt_${temp}K.lammpstrj id type element x y z ix iy iz
+dump_modify     traj sort id element H O
+
+run             ${steps}
+
+write_data      ${out}/npt_${temp}K_final.data nocoeff

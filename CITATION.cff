@@ -1,0 +1,38 @@
+cff-version: 1.2.0
+message: "If you use FlashCart, please cite the paper below."
+title: "FlashCart"
+type: software
+version: "0.1.0"
+date-released: "2026-10-06"
+abstract: >-
+  FlashCart provides Cartesian tensor operations and an equivariant
+  interatomic potential built on them.
+license: Apache-2.0
+repository-code: "https://github.com/inm-leibniz/flashcart"
+authors:
+  - family-names: Zaverkin
+    given-names: Viktor
+preferred-citation:
+  type: generic
+  status: preprint
+  title: "FlashCart: Fast Cartesian Tensor Products for Equivariant Interatomic Potentials"
+  url: "https://arxiv.org/abs/2610.06409"
+  identifiers:
+    - type: other
+      value: "arXiv:2610.06409"
+  year: 2026
+  authors:
+    - family-names: Zaverkin
+      given-names: Viktor
+    - family-names: Goodarzi
+      given-names: Payman
+    - family-names: Sukhomlinov
+      given-names: Sergey V.
+    - family-names: Hovhannisyan
+      given-names: Davit
+    - family-names: Aydin
+      given-names: Roland
+    - family-names: Müser
+      given-names: Martin H.
+    - family-names: Niepert
+      given-names: Mathias

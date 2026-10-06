@@ -1,0 +1,102 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "flashcart"
+dynamic = ["version"]
+description = "FlashCart: Fast Cartesian Tensor Products for Equivariant Interatomic Potentials"
+keywords = ["machine-learning", "interatomic potentials", "molecular dynamics", "equivariant neural networks"]
+readme = "README.md"
+authors = [
+    { name = "Viktor Zaverkin", email = "zaverkin.v@gmail.com" },
+]
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Chemistry",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+requires-python = ">=3.10"
+dependencies = [
+    "torch>=2.9",
+    "numpy",
+    "sympy",
+    "pyyaml",
+    "ase",
+    "matscipy",
+    "h5py",
+    "lightning>=2.2",
+    "torch-ema",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "scipy",
+    "build",
+    "twine",
+]
+docs = [
+    "sphinx>=7.3",
+    "furo",
+    "myst-parser",
+    "sphinx-copybutton",
+    "sphinx-design",
+]
+
+[project.scripts]
+flashcart-train = "flashcart.cli.train:main"
+flashcart-test = "flashcart.cli.test:main"
+flashcart-profile = "flashcart.cli.profile:main"
+flashcart-lammps = "flashcart.cli.lammps_mliap:main"
+
+[project.urls]
+Homepage = "https://github.com/inm-leibniz/flashcart"
+Documentation = "https://inm-leibniz.github.io/flashcart"
+Repository = "https://github.com/inm-leibniz/flashcart"
+Changelog = "https://github.com/inm-leibniz/flashcart/blob/main/CHANGELOG.md"
+
+[tool.setuptools.dynamic]
+version = { attr = "flashcart.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+flashcart = ["py.typed", "configs/*.yaml"]
+
+[tool.pylint.'MESSAGES CONTROL']
+disable = [
+    "line-too-long",
+    "no-member",
+    "missing-module-docstring",
+    "missing-class-docstring",
+    "missing-function-docstring",
+    "too-many-arguments",
+    "too-many-positional-arguments",
+    "too-many-locals",
+    "too-few-public-methods",
+    "too-many-instance-attributes",
+]
+
+[tool.black]
+line-length = 120
+
+[tool.pylint.FORMAT]
+max-module-lines = 2000
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --strict-markers -m \"not slow\""
+pythonpath = ["tests"]
+markers = [
+    "slow: compile-heavy or multi-process tests, excluded from the default run",
+]

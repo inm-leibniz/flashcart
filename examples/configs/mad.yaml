@@ -1,0 +1,50 @@
+# MAD: model i3c3f96l2, seed 0.
+# Only keys that differ from flashcart/configs/default.yaml are listed.
+
+# data (see examples/datasets/prepare_mad.py)
+train_path: data/mad/mad-train.extxyz
+valid_path: data/mad/mad-val.extxyz
+test_path: data/mad/mad-test.extxyz
+elements:
+  [H, He, Li, Be, B, C, N, O, F, Ne, Na, Mg, Al, Si, P, S, Cl, Ar, K, Ca,
+   Sc, Ti, V, Cr, Mn, Fe, Co, Ni, Cu, Zn, Ga, Ge, As, Se, Br, Kr, Rb, Sr, Y,
+   Zr, Nb, Mo, Tc, Ru, Rh, Pd, Ag, Cd, In, Sn, Sb, Te, I, Xe, Cs, Ba, La, Ce,
+   Pr, Nd, Pm, Sm, Eu, Gd, Tb, Dy, Ho, Er, Tm, Yb, Lu, Hf, Ta, W, Re, Os, Ir,
+   Pt, Au, Hg, Tl, Pb, Bi, Po, Rn]
+data_seed: 0
+
+# output
+output_path: models/mad_i3c3f96l2_s0
+
+# model (atomic_shifts stays ~: MAD energies already have the isolated atoms subtracted)
+model_seed: 0
+r_max: 5.0
+n_hidden_feats: 96
+n_interactions: 3
+gate_activation: silu
+
+# optimizer and schedule: 400 epochs (default), 20 linear warmup, then 380 cosine decay
+lr: 2.5e-3
+weight_decay: 1.2e-2
+end_factor: 1.0e-2
+warmup_epochs: 20
+decay_epochs: 380
+decay_shape: cosine
+
+# training
+save_every: 5
+ema_decay: 0.999
+devices: 1
+predict_compile: true
+
+# energy MAE per atom + mean force-vector norm, forces down-weighted
+train_loss:
+  weighted_sum:
+    - property: energy
+      reduce: mae
+      normalization: per_atom
+      weight: 1.0
+    - property: forces
+      reduce: norm_mean
+      normalization: none
+      weight: 0.1

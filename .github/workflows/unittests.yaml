@@ -1,0 +1,79 @@
+name: unit tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.12', '3.13']
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+
+      - name: Install requirements
+        run: |
+          pip install -U pip
+          pip install -e ".[dev]" --index-url https://download.pytorch.org/whl/cpu --extra-index-url https://pypi.org/simple
+
+      - name: Log installed environment
+        run: |
+          python3 -m pip freeze
+
+      - name: Run unit tests
+        run: |
+          pytest tests
+
+      - name: Run slow tests
+        if: matrix.python-version == '3.12'
+        run: |
+          pytest tests -m slow
+
+  # Installs the built wheel (not the source tree) into a clean environment with
+  # a read-only package directory, as a user's `pip install flashcart` would.
+  wheel-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build sdist and wheel
+        run: |
+          pip install build twine
+          python -m build
+          twine check --strict dist/*
+
+      - name: Install the wheel into a clean virtualenv
+        run: |
+          python -m venv /tmp/venv
+          /tmp/venv/bin/pip install torch --index-url https://download.pytorch.org/whl/cpu
+          /tmp/venv/bin/pip install dist/*.whl
+          chmod -R a-w "$(/tmp/venv/bin/python -c 'import flashcart, os; print(os.path.dirname(flashcart.__file__))')"
+
+      - name: Train, test, and export a toy model
+        working-directory: /tmp
+        run: |
+          /tmp/venv/bin/python -c "import flashcart.o3, flashcart; print(flashcart.__version__)"
+          /tmp/venv/bin/python "$GITHUB_WORKSPACE/.github/smoke/make_toy_data.py" toy
+          /tmp/venv/bin/flashcart-train toy/config.yaml
+          /tmp/venv/bin/flashcart-test toy/config.yaml
+          /tmp/venv/bin/flashcart-lammps toy/model
